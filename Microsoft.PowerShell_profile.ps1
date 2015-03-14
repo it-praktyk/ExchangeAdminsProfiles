@@ -8,14 +8,16 @@
       
   .NOTES
    AUTHOR: Wojciech Sciesinski, wojciech[at]sciesinski[dot]net
-   KEYWORDS: PowerShell, Profiles
+   KEYWORDS: PowerShell, Exchange, Profiles
    
    VERSIONS HISTORY
-   0.1.0 -  2015-03-08 - The first version publishid on GitHub
+   0.1.0 - 2015-03-08 - The first version publishid on GitHub
+   0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
+						new PSDrive Scripts added
 
    TODO
-   Verify/change settings windows/buffer size 
-   
+   Load module PSReadline if available in the system
+
    DISCLAIMER
    This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
    any implied warranties of merchantability or of fitness for a particular purpose. The entire risk arising out of the use or
@@ -47,19 +49,39 @@
 	$console2.ProgressForegroundColor  = "yellow"
 	$console2.ProgressBackgroundColor = "darkcyan"
 
-	$buffer = $console.BufferSize
-	$buffer.Width = 120
-	$buffer.Height = 1000
-	$console.BufferSize = $buffer
+	$windowsSizeWidth = 120
+	$windowsSizeHeight = 50
+	$bufferSizeWidth = $WindowsSizeWidth
+	$bufferSizeHeight = 1000
+	
+	Try {
+	
+		[system.console]::WindowHeight = $windowsSizeHeight
+		[system.console]::WindowWidth = $windowsSizeWidth
+	
+		[system.console]::BufferHeight = $bufferSizeHeight
+		[system.console]::BufferWidth = $bufferSizeWidth
+	
+	}
+	Catch {
+	
+		[system.console]::WindowHeight = $windowsSizeHeight
+		[system.console]::WindowWidth = 150
+	}
+	
+	
+	$ProfileDrive = ((Get-Item env:APPDATA).Value).substring(0,2)
 
-
-	$size = $console.WindowSize
-	$size.Width = 120
-	$size.Height = 50
-	$console.WindowSize = $size
-
-	$DesktopPath= 'c:\' + (Get-Item env:HOMEPATH).Value +'\Desktop'
+	$DesktopPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value +'\Desktop'
 	New-PSDrive -Name Desktop -PSProvider FileSystem -Root $DesktopPath | Out-Null
+
+	$ScriptsPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Documents\Scripts'
+	
+	If ( Test-Path -Path $ScriptsPath -PathType Container ) {
+	
+		New-PSDrive -Name Scripts -PSProvider FileSystem -Root $ScriptsPath | Out-Null
+		
+	}
 
 	cd Desktop:
 
@@ -83,5 +105,17 @@
 		Set-ItemProperty -Path $key2Path -Name CertificateRevocation -Value 0 -Force
 
 	}
+	
+	
+	#Display extensions for known files
+	$key3Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+	$key3 = Get-ItemProperty -Path $key3Path -Name HideFileExt
+	
+	If ($key3.HideFileExt -ne 0) {
 
-	Clear-Host
+		Set-ItemProperty -Path $key3Path -Name HideFileExt -Value 0 -Force
+
+	}
+	
+
+	#Clear-Host
