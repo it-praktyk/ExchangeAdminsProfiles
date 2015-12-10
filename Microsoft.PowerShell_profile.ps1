@@ -1,19 +1,20 @@
 <#
-  .SYNOPSIS
-   PowerShell profile used by Exchange Server administrator
+    .SYNOPSIS
+    PowerShell profile used by Exchange Server administrator
    
-   More about PowerShell profiles 
-   get-help about_Profiles
-   https://technet.microsoft.com/en-us/library/hh847857.aspx
+    More about PowerShell profiles 
+    get-help about_Profiles
+    https://technet.microsoft.com/en-us/library/hh847857.aspx
       
-  .NOTES
-   AUTHOR: Wojciech Sciesinski, wojciech[at]sciesinski[dot]net
-   KEYWORDS: PowerShell, Exchange, Profiles
+    .NOTES
+    AUTHOR: Wojciech Sciesinski, wojciech[at]sciesinski[dot]net
+    KEYWORDS: PowerShell, Exchange, Profiles
    
-   VERSIONS HISTORY
-   0.1.0 - 2015-03-08 - The first version publishid on GitHub
-   0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
+    VERSIONS HISTORY
+    0.1.0 - 2015-03-08 - The first version publishid on GitHub
+    0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
 						new PSDrive Scripts added
+    0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
 
    TODO
    Load module PSReadline if available in the system
@@ -28,94 +29,105 @@
 #>
 
 
-	$pshost = get-host
-	$console = $pshost.UI.RawUI
+$pshost = get-host
+$console = $pshost.UI.RawUI
 
-	$foreground = "black"
+$foreground = "black"
 
-	$console.ForegroundColor = "white"
-	$console.BackgroundColor = $foreground
+$console.ForegroundColor = "white"
+$console.BackgroundColor = $foreground
 
-	$console2 = (Get-Host).PrivateData
+$console2 = (Get-Host).PrivateData
 
-	$console2.ErrorForegroundColor = "red"
-	$console2.ErrorBackgroundColor = $foreground
-	$console2.WarningForegroundColor = "yellow"
-	$console2.WarningBackgroundColor = $foreground
-	$console2.DebugForegroundColor = "yellow"
-	$console2.DebugBackgroundColor  = $foreground
-	$console2.VerboseForegroundColor = "yellow"
-	$console2.VerboseBackgroundColor  = $foreground
-	$console2.ProgressForegroundColor  = "yellow"
-	$console2.ProgressBackgroundColor = "darkcyan"
+$console2.ErrorForegroundColor = "red"
+$console2.ErrorBackgroundColor = $foreground
+$console2.WarningForegroundColor = "yellow"
+$console2.WarningBackgroundColor = $foreground
+$console2.DebugForegroundColor = "yellow"
+$console2.DebugBackgroundColor = $foreground
+$console2.VerboseForegroundColor = "yellow"
+$console2.VerboseBackgroundColor = $foreground
+$console2.ProgressForegroundColor = "yellow"
+$console2.ProgressBackgroundColor = "darkcyan"
 
-	$windowsSizeWidth = 120
-	$windowsSizeHeight = 50
-	$bufferSizeWidth = $WindowsSizeWidth
-	$bufferSizeHeight = 1000
-	
-	Try {
-	
-		[system.console]::WindowHeight = $windowsSizeHeight
-		[system.console]::WindowWidth = $windowsSizeWidth
-	
-		[system.console]::BufferHeight = $bufferSizeHeight
-		[system.console]::BufferWidth = $bufferSizeWidth
-	
-	}
-	Catch {
-	
-		[system.console]::WindowHeight = $windowsSizeHeight
-		[system.console]::WindowWidth = 150
-	}
-	
-	
-	$ProfileDrive = ((Get-Item env:APPDATA).Value).substring(0,2)
+$windowsSizeWidth = 120
+$windowsSizeHeight = 50
+$bufferSizeWidth = $WindowsSizeWidth
+$bufferSizeHeight = 1000
 
-	$DesktopPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value +'\Desktop'
-	New-PSDrive -Name Desktop -PSProvider FileSystem -Root $DesktopPath | Out-Null
+Try {
+    
+    [system.console]::WindowHeight = $windowsSizeHeight
+    [system.console]::WindowWidth = $windowsSizeWidth
+    
+    [system.console]::BufferHeight = $bufferSizeHeight
+    [system.console]::BufferWidth = $bufferSizeWidth
+    
+}
+Catch {
+    
+    [system.console]::WindowHeight = $windowsSizeHeight
+    [system.console]::WindowWidth = 150
+}
 
-	$ScriptsPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Documents\Scripts'
-	
-	If ( Test-Path -Path $ScriptsPath -PathType Container ) {
-	
-		New-PSDrive -Name Scripts -PSProvider FileSystem -Root $ScriptsPath | Out-Null
-		
-	}
+#Create new PSDrives - Desktop and Scripts
+$ProfileDrive = ((Get-Item env:APPDATA).Value).substring(0, 2)
 
-	cd Desktop:
+$DesktopPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Desktop'
+New-PSDrive -Name Desktop -PSProvider FileSystem -Root $DesktopPath | Out-Null
 
-	#Disable certificate revocation checking - specially needed for Exchange Servers without internet access
-	$key1Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\WinTrust\Trust Providers\Software Publishing"
-	$key1 = Get-ItemProperty -Path $key1Path -Name State 
+$ScriptsPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Documents\Scripts'
 
+If (Test-Path -Path $ScriptsPath -PathType Container) {
+    
+    New-PSDrive -Name Scripts -PSProvider FileSystem -Root $ScriptsPath | Out-Null
+    
+}
 
-	$key2Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-	$key2 = Get-ItemProperty -Path $key2Path  -Name CertificateRevocation
+Set-Location -Path  Desktop: -ErrorAction SilentlyContinue
 
-	If ($key1.state -ne 146944) {
-
-		Set-ItemProperty -Path $key1Path -Name State -Value 146944 -Force
-
-	}
+#Disable certificate revocation checking - specially needed for Exchange Servers without internet access
+$key1Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\WinTrust\Trust Providers\Software Publishing"
+$key1 = Get-ItemProperty -Path $key1Path -Name State
 
 
-	If ($key2.CertificateRevocation -ne 0) {
+$key2Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+$key2 = Get-ItemProperty -Path $key2Path -Name CertificateRevocation
 
-		Set-ItemProperty -Path $key2Path -Name CertificateRevocation -Value 0 -Force
+If ($key1.state -ne 146944) {
+    
+    Set-ItemProperty -Path $key1Path -Name State -Value 146944 -Force
+    
+}
 
-	}
-	
-	
-	#Display extensions for known files
-	$key3Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-	$key3 = Get-ItemProperty -Path $key3Path -Name HideFileExt
-	
-	If ($key3.HideFileExt -ne 0) {
 
-		Set-ItemProperty -Path $key3Path -Name HideFileExt -Value 0 -Force
+If ($key2.CertificateRevocation -ne 0) {
+    
+    Set-ItemProperty -Path $key2Path -Name CertificateRevocation -Value 0 -Force
+    
+}
 
-	}
-	
 
-	#Clear-Host
+#Display extensions for known files
+$key3Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$key3 = Get-ItemProperty -Path $key3Path -Name HideFileExt
+
+If ($key3.HideFileExt -ne 0) {
+    
+    Set-ItemProperty -Path $key3Path -Name HideFileExt -Value 0 -Force
+    
+}
+
+#Remove previously set variables
+$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3"
+
+$VariablesToRemove | ForEach-Object -Process {
+    
+    Remove-Variable -Name $_ -ErrorAction SilentlyContinue
+    
+}
+
+#Assign default parameters values to some cmdlets
+$PSDefaultParameterValues.Add('Export-CSV:Delimiter', ';')
+$PSDefaultParameterValues.Add('Export-CSV:Encoding', 'UTF8')
+$PSDefaultParameterValues.Add('Export-CSV:NoTypeInformation',$true)
