@@ -15,9 +15,7 @@
     0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
 						new PSDrive Scripts added
     0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
-
-   TODO
-   Load module PSReadline if available in the system
+    0.3.1 - 2015-12-22 - Assigning default parameters corrected, background colors for console corrected
 
    DISCLAIMER
    This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
@@ -32,7 +30,10 @@
 $pshost = get-host
 $console = $pshost.UI.RawUI
 
-$foreground = "black"
+# All available colors you can chech using - source: http://blogs.technet.com/b/gary/archive/2013/11/21/sample-all-powershell-console-colors.aspx
+# [enum]::GetValues([System.ConsoleColor]) | Foreach-Object {Write-Host $_ -ForegroundColor $_}    
+
+$BackgroundColor = "black"
 
 $console.ForegroundColor = "white"
 $console.BackgroundColor = $foreground
@@ -40,15 +41,15 @@ $console.BackgroundColor = $foreground
 $console2 = (Get-Host).PrivateData
 
 $console2.ErrorForegroundColor = "red"
-$console2.ErrorBackgroundColor = $foreground
+$console2.ErrorBackgroundColor = $BackgroundColor
 $console2.WarningForegroundColor = "yellow"
-$console2.WarningBackgroundColor = $foreground
+$console2.WarningBackgroundColor = $BackgroundColor
 $console2.DebugForegroundColor = "yellow"
-$console2.DebugBackgroundColor = $foreground
+$console2.DebugBackgroundColor = $BackgroundColor
 $console2.VerboseForegroundColor = "yellow"
-$console2.VerboseBackgroundColor = $foreground
+$console2.VerboseBackgroundColor = $BackgroundColor
 $console2.ProgressForegroundColor = "yellow"
-$console2.ProgressBackgroundColor = "darkcyan"
+$console2.ProgressBackgroundColor = $BackgroundColor
 
 $windowsSizeWidth = 120
 $windowsSizeHeight = 50
@@ -127,7 +128,11 @@ $VariablesToRemove | ForEach-Object -Process {
     
 }
 
-#Assign default parameters values to some cmdlets
-$PSDefaultParameterValues.Add('Export-CSV:Delimiter', ';')
-$PSDefaultParameterValues.Add('Export-CSV:Encoding', 'UTF8')
-$PSDefaultParameterValues.Add('Export-CSV:NoTypeInformation',$true)
+#Assign default parameters values to some cmdlets - only works with Powershell 3.0 and newer :-/
+if (([Version]$psversiontable.psversion).major -ge 3) {
+    
+    $PSDefaultParameterValues.Add('Export-CSV:Delimiter', ';')
+    $PSDefaultParameterValues.Add('Export-CSV:Encoding', 'UTF8')
+    $PSDefaultParameterValues.Add('Export-CSV:NoTypeInformation', $true)
+    
+}
