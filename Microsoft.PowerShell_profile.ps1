@@ -16,6 +16,7 @@
 						new PSDrive Scripts added
     0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
     0.3.1 - 2015-12-22 - Assigning default parameters corrected, background colors for console corrected
+    0.3.2 - 2016-01-14 - Corrected mistake in the variable usage, added removing existing PsDrives, rewrote set PSDefaultParameterValues
 
    DISCLAIMER
    This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
@@ -36,7 +37,7 @@ $console = $pshost.UI.RawUI
 $BackgroundColor = "black"
 
 $console.ForegroundColor = "white"
-$console.BackgroundColor = $foreground
+$console.BackgroundColor = $BackgroundColor
 
 $console2 = (Get-Host).PrivateData
 
@@ -75,12 +76,29 @@ Catch {
 $ProfileDrive = ((Get-Item env:APPDATA).Value).substring(0, 2)
 
 $DesktopPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Desktop'
+
+If ( test-path -Path "Desktop:" ) {
+
+	Set-Location -Path $DesktopPath
+
+	Get-PSDrive "Desktop" | Remove-PSDrive
+
+}
+
 New-PSDrive -Name Desktop -PSProvider FileSystem -Root $DesktopPath | Out-Null
 
 $ScriptsPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Documents\Scripts'
 
 If (Test-Path -Path $ScriptsPath -PathType Container) {
-    
+
+	If ( test-path -Path "Scripts:" ) {
+
+		Set-Location -Path $ProfileDrive
+
+		Get-PSDrive "Scripts" | Remove-PSDrive
+
+	}
+	    
     New-PSDrive -Name Scripts -PSProvider FileSystem -Root $ScriptsPath | Out-Null
     
 }
@@ -120,7 +138,7 @@ If ($key3.HideFileExt -ne 0) {
 }
 
 #Remove previously set variables
-$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3"
+$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3", "$VariablesToRemove"
 
 $VariablesToRemove | ForEach-Object -Process {
     
@@ -131,8 +149,22 @@ $VariablesToRemove | ForEach-Object -Process {
 #Assign default parameters values to some cmdlets - only works with Powershell 3.0 and newer :-/
 if (([Version]$psversiontable.psversion).major -ge 3) {
     
-    $PSDefaultParameterValues.Add('Export-CSV:Delimiter', ';')
-    $PSDefaultParameterValues.Add('Export-CSV:Encoding', 'UTF8')
-    $PSDefaultParameterValues.Add('Export-CSV:NoTypeInformation', $true)
+	$DefaultParameterVaulesToAdd = @(@('Export-CSV:Delimiter';';'),@('Export-CSV:Encoding','UTF8'),@('Export-CSV:NoTypeInformation','$true'))
+	
+	$DefaultParameterVaulesToAddCount = $DefaultParameterVaulesToAdd.Lenght
+	
+	for($i=0; $i -lt $DefaultParameterVaulesToAddCount; $i++){
+       
+	   $CurrentParameterValue = $DefaultParameterVaulesToAdd[$i][0]
+	   
+	   If ( $PSDefaultParameterValues.Contains($CurrentParameterValue) ) {
+	   
+			$PSDefaultParameterValues.Remove($CurrentParameterValue)
+			
+			$PSDefaultParameterValues.Add($DefaultParameterVaulesToAdd[$i][0],$DefaultParameterVaulesToAdd[$i][1])
+	   
+	   }
+	   
+     }
     
 }
