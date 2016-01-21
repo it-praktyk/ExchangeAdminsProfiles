@@ -17,6 +17,7 @@
     0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
     0.3.1 - 2015-12-22 - Assigning default parameters corrected, background colors for console corrected
     0.3.2 - 2016-01-14 - Corrected mistake in the variable usage, added removing existing PsDrives, rewrote set PSDefaultParameterValues
+	0.3.3 - 2016-01-21 - Removing temporary variables corrected
 
    DISCLAIMER
    This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
@@ -138,7 +139,7 @@ If ($key3.HideFileExt -ne 0) {
 }
 
 #Remove previously set variables
-$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3", "$VariablesToRemove"
+$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3", "VariablesToRemove"
 
 $VariablesToRemove | ForEach-Object -Process {
     
