@@ -59,6 +59,7 @@
     - 0.3.2 - 2016-01-14 - Corrected mistake in the variable usage, added removing existing PsDrives, rewrote set PSDefaultParameterValues
     - 0.3.3 - 2016-01-21 - Removing temporary variables corrected
     - 0.4.0 - 2016-01-21 - The file reformated, help updated
+    - 0.5.0 - 2016-01-25 - Set registry rewrote, set PSDefaultParameterValues corrected
 
     TODO
     - create script for install profile for the local and remote computer
@@ -74,7 +75,7 @@
    
 #>
 
-    $pshost = get-host
+$pshost = get-host
 
 #Resize and set other atributes only for console not for ISE environment
 If ($pshost.Name -eq 'ConsoleHost') {
@@ -158,47 +159,33 @@ If (Test-Path -Path $ScriptsPath -PathType Container) {
 Set-Location -Path Desktop: -ErrorAction SilentlyContinue
 
 #Disable certificate revocation checking - specially needed for Exchange Servers without internet access
-$key1Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\WinTrust\Trust Providers\Software Publishing"
-$key1 = Get-ItemProperty -Path $key1Path -Name State
-
-
-$key2Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-$key2 = Get-ItemProperty -Path $key2Path -Name CertificateRevocation
-
-If ($key1.state -ne 146944) {
-    
-    Set-ItemProperty -Path $key1Path -Name State -Value 146944 -Force
-    
-}
-
-
-If ($key2.CertificateRevocation -ne 0) {
-    
-    Set-ItemProperty -Path $key2Path -Name CertificateRevocation -Value 0 -Force
-    
-}
-
+$RegistryKey1 = @("HKCU:\Software\Microsoft\Windows\CurrentVersion\WinTrust\Trust Providers\Software Publishing", "State", "146944")
+$RegistryKey2 = @("HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings", "CertificateRevocation", "0")
 
 #Display extensions for known files
-$key3Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-$key3 = Get-ItemProperty -Path $key3Path -Name HideFileExt
+$RegistryKey3 = @("HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "HideFileExt", "0")
 
-If ($key3.HideFileExt -ne 0) {
+$RegistryKeys = @($RegistryKey1, $RegistryKey2, $RegistryKey3)
+
+for ($i = 0; $i -lt ($RegistryKeys).Length; $i++) {
     
-    Set-ItemProperty -Path $key3Path -Name HideFileExt -Value 0 -Force
+    if ((Get-ItemProperty -Path ($RegistryKeys[$i][0])).($RegistryKeys[$i][1]) -ne ($RegistryKeys[$i][2])) {
+        
+        Set-ItemProperty -Path $($RegistryKeys[$i][0]) -Name $($RegistryKeys[$i][1]) -Value $($RegistryKeys[$i][2]) -Force
+        
+    }
     
 }
-
 
 
 #Assign default parameters values to some cmdlets - only works with Powershell 3.0 and newer :-/
 if (([Version]$psversiontable.psversion).major -ge 3) {
     
-    $DefaultParameterVaulesToAdd = @(@('Export-CSV:Delimiter'; ';'), @('Export-CSV:Encoding', 'UTF8'), @('Export-CSV:NoTypeInformation', '$true'))
+    $DefaultParameterVaulesToAdd = @(@('Export-CSV:Delimiter'; ';'), `
+    @('Export-CSV:Encoding', 'UTF8'), `
+    @('Export-CSV:NoTypeInformation', '$true'))
     
-    $DefaultParameterVaulesToAddCount = $DefaultParameterVaulesToAdd.Lenght
-    
-    for ($i = 0; $i -lt $DefaultParameterVaulesToAddCount; $i++) {
+    for ($i = 0; $i -lt ($DefaultParameterVaulesToAdd).Lenght; $i++) {
         
         $CurrentParameterValue = $DefaultParameterVaulesToAdd[$i][0]
         
@@ -206,16 +193,17 @@ if (([Version]$psversiontable.psversion).major -ge 3) {
             
             $PSDefaultParameterValues.Remove($CurrentParameterValue)
             
-            $PSDefaultParameterValues.Add($DefaultParameterVaulesToAdd[$i][0], $DefaultParameterVaulesToAdd[$i][1])
-            
         }
+        
+        $PSDefaultParameterValues.Add($DefaultParameterVaulesToAdd[$i][0], $DefaultParameterVaulesToAdd[$i][1])
         
     }
     
 }
 
 #Remove previously set variables - please use the parameters names without "$" char
-$VariablesToRemove = "key1Path", "key2Path", "key3Path", "key1", "key2", "key3", "DefaultParameterVaulesToAdd", "DefaultParameterVaulesToAddCount", "VariablesToRemove"
+$VariablesToRemove = "RegistryKey1", "RegistryKey2", "RegistryKey3", "RegistryKeys", "DefaultParameterVaulesToAdd", `
+"VariablesToRemove",
 
 $VariablesToRemove | ForEach-Object -Process {
     
