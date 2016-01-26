@@ -60,12 +60,12 @@
     - 0.3.3 - 2016-01-21 - Removing temporary variables corrected
     - 0.4.0 - 2016-01-21 - The file reformated, help updated
     - 0.5.0 - 2016-01-25 - Set registry rewrote, set PSDefaultParameterValues corrected
+	- 0.6.0 - 2016-01-26 - Set PSDrive rewrote
 
     TODO
     - create script for install profile for the local and remote computer
     - create script for (automatic) update (with merging ?) profile
-    - rewrite parts - set by loops except code repeat
-
+    
     DISCLAIMER
     This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
     any implied warranties of merchantability or of fitness for a particular purpose. The entire risk arising out of the use or
@@ -125,35 +125,33 @@ If ($pshost.Name -eq 'ConsoleHost') {
     
 }
 
-#Create new PSDrives - Desktop and Scripts
+#Create new PSDrives
 $ProfileDrive = ((Get-Item env:APPDATA).Value).substring(0, 2)
 
 $DesktopPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Desktop'
-
-If (test-path -Path "Desktop:") {
-    
-    Set-Location -Path $ProfileDrive
-    
-    Get-PSDrive "Desktop" | Remove-PSDrive
-    
-}
-
-New-PSDrive -Name Desktop -PSProvider FileSystem -Root $DesktopPath | Out-Null
+$PSDrive1 = @("Desktop:","$DesktopPath")
 
 $ScriptsPath = $ProfileDrive + (Get-Item env:HOMEPATH).Value + '\Documents\Scripts'
+$PSDrive2 = @("Scripts:","$ScriptsPath")
 
-If (Test-Path -Path $ScriptsPath -PathType Container) {
-    
-    If (test-path -Path "Scripts:") {
+$PSDrivesToCreate = @($PSDrive1,$PSDrive2)
+
+for ($i = 0; $i -lt $PSDrivesToCreate.Length; $i++) {
+
+	If (Test-Path -Path $PsDrivesToCreate[$i][1] -PathType Container) {
+
+		If (test-path -Path ($PsDrivesToCreate[$i][0]))   {
         
-        Set-Location -Path $ProfileDrive
+			Set-Location -Path $ProfileDrive
         
-        Get-PSDrive "Scripts" | Remove-PSDrive
+			Get-PSDrive $($PsDrivesToCreate[$i][0]).Replace(':','')  | Remove-PSDrive -ErrorAction SilentlyContinue
         
-    }
+		}	
+	
+		New-PSDrive -Name $($PsDrivesToCreate[$i][0]).Replace(':','') -PSProvider FileSystem -Root ($PsDrivesToCreate[$i][1]) | Out-Null
     
-    New-PSDrive -Name Scripts -PSProvider FileSystem -Root $ScriptsPath | Out-Null
-    
+	}
+
 }
 
 Set-Location -Path Desktop: -ErrorAction SilentlyContinue
@@ -202,8 +200,8 @@ if (([Version]$psversiontable.psversion).major -ge 3) {
 }
 
 #Remove previously set variables - please use the parameters names without "$" char
-$VariablesToRemove = "RegistryKey1", "RegistryKey2", "RegistryKey3", "RegistryKeys", "DefaultParameterVaulesToAdd", `
-"VariablesToRemove",
+$VariablesToRemove = "PSDrive1", "PSDrive2", "PsDrivesToCreate", "RegistryKey1", "RegistryKey2", `
+"RegistryKey3", "RegistryKeys", "DefaultParameterVaulesToAdd", "VariablesToRemove"
 
 $VariablesToRemove | ForEach-Object -Process {
     
