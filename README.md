@@ -14,7 +14,7 @@ PowerShell profiles with settings helpfull for Exchange servers adminstrators
 - get-help about_Profiles
 - https://technet.microsoft.com/en-us/library/hh847857.aspx
 
-	Copy text from this file to the PowerShell profile file (create if doesn't exist)
+	Copy text from this file to the PowerShell profile file (create it if doesn't exist)
     - for you only: C:\&lt;YOUR_PROFILE_DIRECTORY&gt;\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 - value for the variable $Profile.CurrentUserCurrentHost
     - for all users on computer: C:\Windows\System32\WindowsPowerShell\v1.0\Microsoft.PowerShell_profile.ps1 - value for the variable $Profile.AllUsersCurrentHost
 
@@ -55,14 +55,15 @@ For all users use the variable $Profile.AllUsersAllHosts instead $Profile .
 ```
 
 
-## AUTHOR: Wojciech Sciesinski, wojciech[at]sciesinski[dot]net  
+## AUTHOR
+Wojciech Sciesinski, wojciech[at]sciesinski[dot]net  
 
-## KEYWORDS: PowerShell, Exchange, Profiles
+## KEYWORDS
+PowerShell, Exchange, Profiles
 
 ## VERSIONS HISTORY
     - 0.1.0 - 2015-03-08 - The first version publishid on GitHub
-    - 0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
-						new PSDrive Scripts added
+    - 0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed new PSDrive Scripts added
     - 0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
     - 0.3.1 - 2015-12-22 - Assigning default parameters corrected, background colors for console corrected
     - 0.3.2 - 2016-01-14 - Corrected mistake in the variable usage, added removing existing PsDrives, rewrote set PSDefaultParameterValues
@@ -70,6 +71,7 @@ For all users use the variable $Profile.AllUsersAllHosts instead $Profile .
 	- 0.4.0 - 2016-01-21 - The file reformated, help updated
 	- 0.5.0 - 2016-01-25 - Set registry rewrote, set PSDefaultParameterValues corrected
 	- 0.6.0 - 2016-01-26 - Set PSDrive rewrote
+	- 0.6.1 - 2016-01-27 - Help updated
 
 ## DISCLAIMER
    This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,

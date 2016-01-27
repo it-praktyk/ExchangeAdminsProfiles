@@ -4,6 +4,14 @@
    
     .DESCRIPTION
     PowerShell profiles with settings helpfull for Exchange Server adminstrators
+	
+	Included settings
+	- additional PSDrive 'Desktop:' which pointing to Desktop
+	- additional PSDrive 'Scripts:' whic pointing to MyDocuments\Scripts - if the folder exist
+	- switching off the certificates revocation list (the same as Advanced Options ) - it is specially helpfull for Exchange Servers which don't have access to the internet - Exchange Management Shell is starting faster
+	- console resizing and color standarization
+	- adding default parameters settings to the variable PSDefaultParameterValues - for Export-CSV e.g.
+	- display file extensions for known file format
     
     More about PowerShell profiles 
     get-help about_Profiles
@@ -52,8 +60,7 @@
        
     VERSIONS HISTORY
     - 0.1.0 - 2015-03-08 - The first version publishid on GitHub
-    - 0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed
-                        new PSDrive Scripts added
+    - 0.2.0 - 2015-03-18 - console and buffer resizing corrected, verifying if known file extensions are displayed new PSDrive Scripts added
     - 0.3.0 - 2015-12-10 - Clear variables set temporary in profile, Set default parameters for Export-CSV cmdlet
     - 0.3.1 - 2015-12-22 - Assigning default parameters corrected, background colors for console corrected
     - 0.3.2 - 2016-01-14 - Corrected mistake in the variable usage, added removing existing PsDrives, rewrote set PSDefaultParameterValues
@@ -61,6 +68,7 @@
     - 0.4.0 - 2016-01-21 - The file reformated, help updated
     - 0.5.0 - 2016-01-25 - Set registry rewrote, set PSDefaultParameterValues corrected
 	- 0.6.0 - 2016-01-26 - Set PSDrive rewrote
+	- 0.6.1 - 2016-01-27 - Help updated
 
     TODO
     - create script for install profile for the local and remote computer
