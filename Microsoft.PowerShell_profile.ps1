@@ -4,14 +4,14 @@
    
     .DESCRIPTION
     PowerShell profiles with settings helpfull for Exchange Server adminstrators
-	
-	Included settings
-	- additional PSDrive 'Desktop:' which pointing to Desktop
-	- additional PSDrive 'Scripts:' whic pointing to MyDocuments\Scripts - if the folder exist
-	- switching off the certificates revocation list (the same as Advanced Options ) - it is specially helpfull for Exchange Servers which don't have access to the internet - Exchange Management Shell is starting faster
-	- console resizing and color standarization
-	- adding default parameters settings to the variable PSDefaultParameterValues - for Export-CSV e.g.
-	- display file extensions for known file format
+    
+    Included settings
+    - additional PSDrive 'Desktop:' which pointing to Desktop
+    - additional PSDrive 'Scripts:' whic pointing to MyDocuments\Scripts - if the folder exist
+    - switching off the certificates revocation list (the same as Advanced Options ) - it is specially helpfull for Exchange Servers which don't have access to the internet - Exchange Management Shell is starting faster
+    - console resizing and color standarization
+    - adding default parameters settings to the variable PSDefaultParameterValues - for Export-CSV e.g.
+    - display file extensions for known file format
     
     More about PowerShell profiles 
     get-help about_Profiles
@@ -67,12 +67,14 @@
     - 0.3.3 - 2016-01-21 - Removing temporary variables corrected
     - 0.4.0 - 2016-01-21 - The file reformated, help updated
     - 0.5.0 - 2016-01-25 - Set registry rewrote, set PSDefaultParameterValues corrected
-	- 0.6.0 - 2016-01-26 - Set PSDrive rewrote
-	- 0.6.1 - 2016-01-27 - Help updated
+    - 0.6.0 - 2016-01-26 - Set PSDrive rewrote
+    - 0.6.1 - 2016-01-27 - Help updated
+    - 0.6.2 - 2016-02-04 - Small correction
 
     TODO
     - create script for install profile for the local and remote computer
     - create script for (automatic) update (with merging ?) profile
+    - add configuration file to allow customize profile behavior 
     
     DISCLAIMER
     This script is provided AS IS without warranty of any kind. I disclaim all implied warranties including, without limitation,
@@ -146,19 +148,19 @@ $PSDrivesToCreate = @($PSDrive1,$PSDrive2)
 
 for ($i = 0; $i -lt $PSDrivesToCreate.Length; $i++) {
 
-	If (Test-Path -Path $PsDrivesToCreate[$i][1] -PathType Container) {
+    If (Test-Path -Path $PsDrivesToCreate[$i][1] -PathType Container) {
 
-		If (test-path -Path ($PsDrivesToCreate[$i][0]))   {
+        If (test-path -Path ($PsDrivesToCreate[$i][0]))   {
         
-			Set-Location -Path $ProfileDrive
+            Set-Location -Path $ProfileDrive
         
-			Get-PSDrive $($PsDrivesToCreate[$i][0]).Replace(':','')  | Remove-PSDrive -ErrorAction SilentlyContinue
+            Get-PSDrive $($PsDrivesToCreate[$i][0]).Replace(':','')  | Remove-PSDrive -ErrorAction SilentlyContinue
         
-		}	
-	
-		New-PSDrive -Name $($PsDrivesToCreate[$i][0]).Replace(':','') -PSProvider FileSystem -Root ($PsDrivesToCreate[$i][1]) | Out-Null
+        }   
     
-	}
+        New-PSDrive -Name $($PsDrivesToCreate[$i][0]).Replace(':','') -PSProvider FileSystem -Root ($PsDrivesToCreate[$i][1]) | Out-Null
+    
+    }
 
 }
 
@@ -187,7 +189,7 @@ for ($i = 0; $i -lt ($RegistryKeys).Length; $i++) {
 #Assign default parameters values to some cmdlets - only works with Powershell 3.0 and newer :-/
 if (([Version]$psversiontable.psversion).major -ge 3) {
     
-    $DefaultParameterVaulesToAdd = @(@('Export-CSV:Delimiter'; ';'), `
+    $DefaultParameterVaulesToAdd = @(@('Export-CSV:Delimiter', ';'), `
     @('Export-CSV:Encoding', 'UTF8'), `
     @('Export-CSV:NoTypeInformation', '$true'))
     
